@@ -1,0 +1,17 @@
+{
+  "text": [
+    {
+      "name": "DC314",
+      "class": "com.aslan.module.cipher.infos.dc3_14.DC3_14TextInfoHandlerFactory",
+      "version": [
+        {
+          "id": 1,
+          "name": "version 1",
+          "class": "com.aslan.module.cipher.infos.dc3_14.DC3_14TextInfoHandler_V1"
+        }
+      ]
+    }
+  ],
+  "file": [
+  ]
+}
