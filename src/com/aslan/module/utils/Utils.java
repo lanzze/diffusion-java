@@ -45,4 +45,12 @@ public class Utils {
         return null;
     }
 
+    public static void reverse(byte[] data) {
+        int end = data.length - 1, half = data.length / 2;
+        for (int i = 0; i < half; i++) {
+            byte temp = data[i];
+            data[i] = data[end - i];
+            data[end - i] = temp;
+        }
+    }
 }

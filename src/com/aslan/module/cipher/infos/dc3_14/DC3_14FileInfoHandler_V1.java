@@ -22,7 +22,7 @@ public class DC3_14FileInfoHandler_V1 implements TextInfoHandler {
 		info.cycle      = buf[offset++];
 		info.group      = 1 << info.log;
 
-		int options     = buf[offset++]<<8 | buf[offset];
+		int options     = buf[offset++] << 8 | buf[offset];
 		info.options   |= (options & 1 << 0) == 0 ? 0: PADDING;
 		info.options   |= (options & 1 << 1) == 0 ? 0: ENCRYPT_FILENAME;
 
