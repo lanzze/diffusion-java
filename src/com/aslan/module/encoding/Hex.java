@@ -1,3 +1,5 @@
+package com.aslan.module.encoding;
+
 public class Hex {
     static byte[] table = new byte[]{
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

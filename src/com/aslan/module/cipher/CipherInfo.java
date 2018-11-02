@@ -4,8 +4,8 @@ public class CipherInfo {
     public int algorithm;
     public int algorithmV;
 
-    public int level;
-    public int levelV;
+    public int key;
+    public int keyV;
 
     public int version;
     public int cycle;
@@ -16,5 +16,5 @@ public class CipherInfo {
 
     public int fileNameSize;
 
-    public byte[] key;
+    public byte[] keyData;
 }

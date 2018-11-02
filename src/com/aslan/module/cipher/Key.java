@@ -6,7 +6,7 @@ public interface Key {
 
     byte[][] update();
 
-    int level();
+    int identity();
 
     int version();
 }

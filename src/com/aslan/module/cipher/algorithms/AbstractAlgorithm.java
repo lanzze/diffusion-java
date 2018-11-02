@@ -7,13 +7,11 @@ public abstract class AbstractAlgorithm implements Algorithm {
 
     protected int N;
     protected int R;
-    protected int H;
-    protected short[] BOX;
+    protected byte[] S;
+    protected byte[] $;
 
     public void init(AlgorithmInfo option) {
-        this.BOX = option.BOX;
-        this.N = option.N;
-        this.R = option.R;
-        this.H = this.N >> 1;
+        N = option.N;
+        R = option.R;
     }
 }

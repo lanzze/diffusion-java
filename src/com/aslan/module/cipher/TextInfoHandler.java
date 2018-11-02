@@ -1,8 +1,8 @@
 package com.aslan.module.cipher;
 
-import com.aslan.module.core.Versionable;
+import com.aslan.module.core.Versioned;
 
-public interface TextInfoHandler extends Versionable {
+public interface TextInfoHandler extends Versioned {
 
     int read(byte[] buf, int offset, CipherInfo info);
 

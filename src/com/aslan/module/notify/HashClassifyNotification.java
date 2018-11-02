@@ -11,11 +11,7 @@ public class HashClassifyNotification implements ClassifyNotification {
 
     public void addNotifier(String name, Notifier notifier, boolean global) {
         Map<String, List<Notifier>> map = global ? statics : this.content;
-        List<Notifier> list = map.get(name);
-        if (list == null) {
-            list = new ArrayList<>();
-            map.put(name, list);
-        }
+        List<Notifier> list = map.computeIfAbsent(name, (key) -> new ArrayList<>());
         list.add(notifier);
     }
 
@@ -36,7 +32,6 @@ public class HashClassifyNotification implements ClassifyNotification {
 
     protected void doNotify(NotifyEvent event, List<Notifier> list) {
         int size = list == null ? 0 : list.size();
-        if (size == 0) return;
         for (int i = 0; i < size; i++) {
             try {
                 list.get(i).action(event);

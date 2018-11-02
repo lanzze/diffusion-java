@@ -1,22 +1,20 @@
-package com.aslan.module.cipher.keys;
+package com.aslan.module.cipher.keys.lazy;
 
 import com.aslan.module.cipher.AlgorithmInfo;
 import com.aslan.module.cipher.CipherInfo;
+import com.aslan.module.cipher.Consts;
+import com.aslan.module.cipher.keys.diffusion.DiffusionKey1;
 
-import static com.aslan.module.cipher.keys.Box.*;
-
-public class StreamKey_V1 extends MixKey {
+public class LazyStreamKey1 extends DiffusionKey1 {
     int[] indices = null;
 
     public void init(CipherInfo cipherInfo, AlgorithmInfo algorithmInfo) {
         super.init(cipherInfo, algorithmInfo);
-        init_key(cipherInfo.key);
-        update_key();
-        update_key();
+        update();
     }
 
     public byte[][] update() {
-        int x = 0, v = R - 1, h = H - 1;
+        int x, v = R - 1, h = H - 1;
         for (int i = 0; i < R; i++, v--) {
             x = indices[i] & h;
             byte[] U = K[i];
@@ -26,7 +24,6 @@ public class StreamKey_V1 extends MixKey {
                 U[x] = (byte) (S2[(U[x] ^ V[x])] ^ U[y]);
                 x = (++x) & h;
                 y++;
-
             }
             indices[i] = (indices[i] << 1);
             indices[i] = (indices[i]) > H ? 1 : indices[i];
@@ -39,12 +36,12 @@ public class StreamKey_V1 extends MixKey {
         indices = new int[algorithmInfo.R];
     }
 
-    protected void init_key(byte[] key) {
-        super.init_key(key);
-        init_indices(N);
+    protected void init(CipherInfo cipherInfo) {
+        super.init(cipherInfo);
+        init_indices();
     }
 
-    protected void init_indices(int N) {
+    protected void init_indices() {
         indices[0] = N;
         for (int i = 1; i <= R; i++) {
             indices[i] = 1 << i - 1;
@@ -52,8 +49,8 @@ public class StreamKey_V1 extends MixKey {
     }
 
     @Override
-    public int level() {
-        return 2;
+    public int identity() {
+        return Consts.KEYS.STREAM_LAZY;
     }
 
     @Override

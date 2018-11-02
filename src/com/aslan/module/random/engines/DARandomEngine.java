@@ -69,22 +69,23 @@ public class DARandomEngine implements RandomEngine {
         int x = 0, r = R - 1, h = H - 1;
         for (int i = 0; i < r; i++) {
             for (int y = H; y < N; ) {
-                B[y] = (byte) (S1[(B[y] ^ D[y])] ^ B[x]);
-                B[x] = (byte) (S2[(B[x] ^ D[x])] ^ B[y]);
+                B[y] = (byte) (S1[(B[y] ^ D[y]) & 0xFF] ^ B[x]);
+                B[x] = (byte) (S2[(B[x] ^ D[x]) & 0xFF] ^ B[y]);
                 x = (++x) & h;
                 y++;
-                B[y] = (byte) (S1[(B[y] ^ D[y])] ^ B[x]);
-                B[x] = (byte) (S2[(B[x] ^ D[x])] ^ B[y]);
+                B[y] = (byte) (S1[(B[y] ^ D[y]) & 0xFF] ^ B[x]);
+                B[x] = (byte) (S2[(B[x] ^ D[x]) & 0xFF] ^ B[y]);
                 x = (++x) & h;
                 y++;
-                B[y] = (byte) (S1[(B[y] ^ D[y])] ^ B[x]);
-                B[x] = (byte) (S2[(B[x] ^ D[x])] ^ B[y]);
+                B[y] = (byte) (S1[(B[y] ^ D[y]) & 0xFF] ^ B[x]);
+                B[x] = (byte) (S2[(B[x] ^ D[x]) & 0xFF] ^ B[y]);
                 x = (++x) & h;
                 y++;
-                B[y] = (byte) (S1[(B[y] ^ D[y])] ^ B[x]);
-                B[x] = (byte) (S2[(B[x] ^ D[x])] ^ B[y]);
+                B[y] = (byte) (S1[(B[y] ^ D[y]) & 0xFF] ^ B[x]);
+                B[x] = (byte) (S2[(B[x] ^ D[x]) & 0xFF] ^ B[y]);
                 x = (++x) & h;
                 y++;
+
             }
             x = H >> i;
         }

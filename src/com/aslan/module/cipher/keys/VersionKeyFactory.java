@@ -9,17 +9,17 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 
-public abstract class KeyFactoryProxy implements KeyFactory {
+public abstract class VersionKeyFactory implements KeyFactory {
     protected SortedMap<Integer, Class<? extends Key>> map = new TreeMap<>();
 
     public Key make(CipherInfo option) throws Exception {
-        int version = option.levelV;
+        int version = option.keyV;
         Class<? extends Key> cl = form(version);
         if (cl == null) {
             throw new DiffusionException("不支持的密匙算法版本({@name})：{}");
         }
         Key key = cl.newInstance();
-        option.levelV = key.version();
+        option.keyV = key.version();
         return key;
     }
 

@@ -10,7 +10,7 @@ public class RandomBlockPadding implements Padding {
     Random random = null;
 
     public RandomBlockPadding(Random random) {
-        if (!(random instanceof Random)) {
+        if (random == null) {
             random = new FastSecureRandom(Lookup.seedFactory(), null);
         }
         this.random = random;

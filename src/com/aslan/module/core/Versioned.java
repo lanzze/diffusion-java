@@ -1,6 +1,6 @@
 package com.aslan.module.core;
 
-public interface Versionable {
+public interface Versioned {
 
     int version();
 }

@@ -15,12 +15,12 @@ public class Utils {
         return true;
     }
 
-    public static AlgorithmInfo computeAlgorithmInfo(int N, int e, AlgorithmInfo option) {
-        int lg = (int) log2(N);
+    public static AlgorithmInfo computeAlgorithmInfo(int N, AlgorithmInfo option) {
         if (option == null) option = new AlgorithmInfo();
+        int log = (int) log2(N);
         option.N = N;
-        option.L = lg;
-        option.R = lg + e;
+        option.L = log;
+        option.R = log + 1;
         return option;
     }
 
@@ -52,5 +52,24 @@ public class Utils {
             data[i] = data[end - i];
             data[end - i] = temp;
         }
+    }
+
+
+    public static void print(byte[] B, String end) {
+        for (int i = 0; i < B.length; i++) {
+            String hex = Integer.toHexString(B[i] & 0xFF);
+            System.out.print((B[i] & 0xFF) < 16 ? "0" + hex : hex);
+            System.out.print(' ');
+        }
+        System.out.print(end);
+    }
+
+    public static void print(byte[] B) {
+        print(B, "\n");
+    }
+
+    public static String hex(byte value) {
+        String hex = Integer.toHexString(value & 0xFF);
+        return (value & 0xFF) < 16 ? "0" + hex : hex;
     }
 }

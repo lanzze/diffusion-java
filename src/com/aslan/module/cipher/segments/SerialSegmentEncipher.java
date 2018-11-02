@@ -2,7 +2,7 @@ package com.aslan.module.cipher.segments;
 
 public class SerialSegmentEncipher extends AbstractSegment {
 
-    public int run(byte[] in, int offset, int length) {
+    public int exec(byte[] in, int offset, int length) {
         int L = info.L, N = info.N;
         int round = (length >> L) >> 3;
         int remainder = (length >> L) & 7;
@@ -31,7 +31,7 @@ public class SerialSegmentEncipher extends AbstractSegment {
         return length;
     }
 
-    public int run(byte[] in, int inf, byte[] out, int ouf, int length) {
+    public int exec(byte[] in, int inf, byte[] out, int ouf, int length) {
         int N = info.N;
         int H = N - fill, F = N;
         int round = (int) Math.floor(length / H) >> 2;

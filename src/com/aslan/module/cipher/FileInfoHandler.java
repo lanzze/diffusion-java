@@ -1,10 +1,10 @@
 package com.aslan.module.cipher;
 
-import com.aslan.module.core.Versionable;
+import com.aslan.module.core.Versioned;
 
 import java.nio.channels.FileChannel;
 
-public interface FileInfoHandler extends Versionable {
+public interface FileInfoHandler extends Versioned {
 
     int read(FileChannel channel, CipherInfo info);
 

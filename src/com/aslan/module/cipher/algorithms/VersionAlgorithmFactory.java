@@ -7,7 +7,7 @@ import com.aslan.module.cipher.CipherInfo;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public abstract class AlgorithmFactoryProxy implements AlgorithmFactory {
+public abstract class VersionAlgorithmFactory implements AlgorithmFactory {
     protected SortedMap<Integer, Class<? extends Algorithm>> map = new TreeMap<>();
 
     public Algorithm make(CipherInfo option) throws Exception {

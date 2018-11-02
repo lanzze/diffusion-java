@@ -19,9 +19,10 @@ public class Consts {
         public static int FILE 			        = 1 << 30;
     }
 
-    public static class LEVELS{
+    public static class KEYS{
         public static int FIXED                 = 1;
-        public static int STREAM                = 2;
+        public static int STREAM_LAZY           = 2;
+        public static int STREAM_DILIGENT       = 3;
     }
 
     public static class INFO_HEAD{
