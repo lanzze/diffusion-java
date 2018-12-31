@@ -11,14 +11,14 @@ public class DC140713Algorithm1 extends AbstractAlgorithm {
         this.$ = Box.V1.DEC_BOX;
     }
 
-    public void enc(byte[] M, int o, byte[][] K) {
-        int x = 0, v = R, H = N >> 1, h = H - 1;
+    public void enc(byte[] M, int o, byte[] K) {
+        int x = 0, H = N >> 1, h = H - 1;
         for (int i = 1; i <= R; i++) {
-            byte[] U = K[i - 1];
-            byte[] V = K[--v];
+            int u = N * i;
+            int v = N * (R - i - 1);
             for (int y = H; y < N; ) {
-                M[o + y] = (byte) (S[(M[o + y] ^ U[o + y]) & 0xFF] ^ M[o + x]);
-                M[o + x] = (byte) (S[(M[o + x] ^ V[o + x]) & 0xFF] ^ M[o + y]);
+                M[o + y] = (byte) (S[(M[o + y] ^ K[u + y]) & 0xFF] ^ M[o + x]);
+                M[o + x] = (byte) (S[(M[o + x] ^ K[v + x]) & 0xFF] ^ M[o + y]);
                 x = (++x) & h;
                 y++;
             }
@@ -26,14 +26,14 @@ public class DC140713Algorithm1 extends AbstractAlgorithm {
         }
     }
 
-    public void dec(byte[] C, int o, byte[][] K) {
-        int x = 0, v = R - 1, H = N >> 1, h = H - 1;
-        for (int i = 0; i < R; i++, v--) {
-            byte[] V = K[i];
-            byte[] U = K[v];
+    public void dec(byte[] C, int o, byte[] K) {
+        int x = 0, H = N >> 1, h = H - 1;
+        for (int i = 0; i < R; i++) {
+            int v = N * i;
+            int u = N * (R - i - 1);
             for (int y = H; y < N; ) {
-                C[o + x] = (byte) ($[(C[o + x] ^ C[o + y]) & 0xFF] ^ V[o + x]);
-                C[o + y] = (byte) ($[(C[o + x] ^ C[o + y]) & 0xFF] ^ U[o + y]);
+                C[o + x] = (byte) ($[(C[o + x] ^ C[o + y]) & 0xFF] ^ K[v + x]);
+                C[o + y] = (byte) ($[(C[o + x] ^ C[o + y]) & 0xFF] ^ K[u + y]);
                 x = (++x) & h;
                 y++;
             }

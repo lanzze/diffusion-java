@@ -12,7 +12,8 @@ public abstract class DiffusionKey1 extends AbstractKey {
     protected int N = 0;
     protected int H = 0;
     protected int R = 0;
-    protected byte[][] K = null;
+    protected byte[] K = null;
+    protected byte[][] KK = null;
     protected byte[] S1;
     protected byte[] S2;
 
@@ -33,15 +34,16 @@ public abstract class DiffusionKey1 extends AbstractKey {
         init(algorithmInfo);
         if (alloc) alloc(algorithmInfo);
         init(cipherInfo);
-        // diffusion(K);
+        diffusion(KK);
     }
 
-    public byte[][] update() {
+    public byte[] update() {
         return K;
     }
 
     protected void alloc(AlgorithmInfo algorithmInfo) {
-        K = new byte[R][N];
+        K = new byte[N * R];
+        KK = new byte[R][N];
     }
 
     protected void init(AlgorithmInfo algorithmInfo) {
@@ -63,7 +65,7 @@ public abstract class DiffusionKey1 extends AbstractKey {
         for (int i = 0; i < R; i++) {
             for (int j = 0; j < N; j++) {
                 int v = (x < length ? key[x] : index++ & 0xFF);
-                K[i][j] = ((x & 1) == 0 ? S1[v] : S2[v]);
+                KK[i][j] = ((x & 1) == 0 ? S1[v] : S2[v]);
                 x++;
             }
         }
@@ -77,6 +79,9 @@ public abstract class DiffusionKey1 extends AbstractKey {
                 x = ++x == _H ? 0 : x;
             }
             x = X >> i;
+        }
+        for (int i = 0; i < R; i++) {
+            System.arraycopy(KK[i], 0, K, i * N, N);
         }
         return K;
     }

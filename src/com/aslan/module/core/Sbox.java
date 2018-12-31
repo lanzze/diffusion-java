@@ -1,6 +1,7 @@
 package com.aslan.module.core;
 
 import com.aslan.module.cipher.keys.Box;
+import com.aslan.module.utils.Utils;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Sbox {
+    static int BITS = 4;
     static int SIZE = 256;
     static Random random = new SecureRandom();
     static Random rand2 = new SecureRandom();
@@ -15,6 +17,7 @@ public class Sbox {
     public static void main(String[] args) throws IOException {
 
         byte[] box = make();
+        // byte[] box = very();
         adjust(box);
         validate(box, "box");
         byte[] map = map(box);
@@ -23,41 +26,26 @@ public class Sbox {
         print(box);
 
 
-
-
-//        byte[] S1 = com.aslan.module.cipher.keys.Box.V2.S;
-//        validate(S1, "box");
-//        byte[] map = map(S1);
+//        byte[] S = com.aslan.module.cipher.keys.Box.V2.S;
+//        validate(S, "box");
+//        byte[] map = map(S);
 //        validate(map, "map");
-//        check(S1, map);
+//        check(S, map);
 //        print(map);
 
 
-//        equals(S1, Box.V2.ENC_BOX);
-        System.out.println();
+//        equals(S, Box.V2.ENC_BOX);
+//         System.out.println();
+        byte[] diff = diff(box);
+        print2(diff);
+    }
+
+    public static byte[] trys() {
+        return adjust(make());
     }
 
 
     public static byte[] make() {
-//        Set<Byte> set = new LinkedHashSet<>();
-//        int count = 1024 * 1024;
-//        byte[] codes = new byte[count];
-//        out:
-//        while (true) {
-//            random.nextBytes(codes);
-//            for (int i = 0; i < count; i++) {
-//                set.add(codes[i]);
-//                if (set.size() == SIZE) {
-//                    break out;
-//                }
-//            }
-//        }
-//        Object[] o = set.toArray();
-//        byte[] box = new byte[SIZE];
-//        for (int i = 0; i < SIZE; i++) {
-//            box[i] = (byte) ((byte) o[i] & 0xff);
-//        }
-//        return box;
         byte[] box = new byte[SIZE];
         for (int i = 0; i < SIZE; i++) {
             box[i] = (byte) i;
@@ -87,8 +75,19 @@ public class Sbox {
             if (hex.length() == 1) {
                 hex = '0' + hex;
             }
-            System.out.print("(byte)0x"+hex);
+            System.out.print("(byte)0x" + hex);
             System.out.print(",");
+            if (i % 16 == 0) {
+                System.out.println();
+            }
+        }
+    }
+
+    public static void print2(byte[] codes) {
+        for (int i = 1; i <= SIZE; i++) {
+            String hex = Integer.toHexString(codes[i - 1] & 0xff);
+            System.out.print(hex);
+            System.out.print(" ");
             if (i % 16 == 0) {
                 System.out.println();
             }
@@ -110,11 +109,22 @@ public class Sbox {
             System.out.println("Check successful\n");
     }
 
-    public static void adjust(byte[] box) {
+
+    public static byte[] adjust(byte[] box) {
         for (int i = 0; i < 81; i++) {
             adjust0(box, new SecureRandom());
         }
         adjust1(box, new SecureRandom());
+        return box;
+    }
+
+    public static byte[] very() {
+        while (true) {
+            byte[] box = make();
+            if ((box[0] & 0xFF) == 0x69) {
+                return box;
+            }
+        }
     }
 
     public static void adjust0(byte[] box, Random random) {
@@ -133,8 +143,7 @@ public class Sbox {
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 int oi = i << 4 | j;
-                byte v = box[oi];
-                if ((v & 0x0F) == j || (v >> 4 & 0x0F) == i) {
+                if (!checkCell(box[oi] & 0xFF, oi)) {
                     swap(box, i, j, random);
                 }
             }
@@ -145,11 +154,9 @@ public class Sbox {
         while (true) {
             int oi = row << 4 | col;
             int ni = random.nextInt() & 255;
-            int ov = box[oi];
-            int nv = box[ni];
-            int nr = ni >> 4 & 0xF;
-            int nc = ni >> 0 & 0xF;
-            if ((ov >> 4 & 0xF) != nr && (ov & 0xF) != nc && (nv >> 4 & 0xF) != row && (nv & 0xF) != col) {
+            int ov = box[oi] & 0xFF;
+            int nv = box[ni] & 0xFF;
+            if (checkCell(nv, oi) && checkCell(ov, ni)) {
                 byte tmp = box[oi];
                 box[oi] = box[ni];
                 box[ni] = tmp;
@@ -171,6 +178,35 @@ public class Sbox {
             }
         }
         if (valid) System.out.println(String.format("Validate %s successful", name));
+    }
+
+    public static byte[] diff(byte[] box) {
+        byte[] buf = new byte[256];
+        for (int i = 0; i < 256; i++) {
+            buf[i] = (byte) diff(box[i] & 0xFF, i);
+        }
+        return buf;
+    }
+
+    public static int diff(int a, int b) {
+        int c = 0;
+        if ((a & 128) != (b & 128)) c++;
+        if ((a & 64) != (b & 64)) c++;
+        if ((a & 32) != (b & 32)) c++;
+        if ((a & 16) != (b & 16)) c++;
+        if ((a & 8) != (b & 8)) c++;
+        if ((a & 4) != (b & 4)) c++;
+        if ((a & 2) != (b & 2)) c++;
+        if ((a & 1) != (b & 1)) c++;
+        return c;
+    }
+
+    public static boolean checkCell(int cell, int index) {
+        if ((cell & 0xF0) == (index & 0xF0) || (cell & 0x0F) == (index & 0x0F)) {
+            return false;
+        }
+        int diff = diff(cell, index);
+        return diff >= BITS && diff != 8;
     }
 
     public static void equals(byte[] S1, byte[] S2) {

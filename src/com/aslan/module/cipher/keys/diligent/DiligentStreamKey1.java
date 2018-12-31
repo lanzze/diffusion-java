@@ -5,7 +5,7 @@ import com.aslan.module.cipher.keys.diffusion.DiffusionKey2;
 
 public class DiligentStreamKey1 extends DiffusionKey2 {
 
-    public byte[][] update() {
+    public byte[] update() {
         return diffusion(K);
     }
 

@@ -68,6 +68,13 @@ public class Utils {
         print(B, "\n");
     }
 
+    public static void print(byte[][] B, String end) {
+        for (int i = 0; i < B.length; i++) {
+            print(B[i], "\n");
+        }
+        System.out.print(end);
+    }
+
     public static String hex(byte value) {
         String hex = Integer.toHexString(value & 0xFF);
         return (value & 0xFF) < 16 ? "0" + hex : hex;

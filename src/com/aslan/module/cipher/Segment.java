@@ -1,6 +1,8 @@
 package com.aslan.module.cipher;
 
-public interface Segment {
+import com.aslan.module.core.Usable;
+
+public interface Segment extends Usable {
     void init(SessionInfo option);
 
     int exec(byte[] in, int offset, int length);

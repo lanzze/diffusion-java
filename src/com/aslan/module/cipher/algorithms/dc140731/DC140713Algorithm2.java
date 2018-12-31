@@ -12,13 +12,13 @@ public class DC140713Algorithm2 extends AbstractAlgorithm {
         this.$ = Box.V1.DEC_BOX;
     }
 
-    public void enc(byte[] M, int o, byte[][] KK) {
+    public void enc(byte[] M, int o, byte[] K) {
         int i = 0, H = N >> 1, h = H - 1, hh = H >> 1;
         for (int r = 1; r <= R; r++) {
-            byte[] K = KK[r - 1];
+            int k = N * (r - 1);
             for (int j = H; j < N; ) {
-                M[o + j] = (byte) (S[(M[o + i] ^ M[o + j]) & 0xFF] ^ K[j]);
-                M[o + i] = (byte) (S[(M[o + i] ^ M[o + j]) & 0xFF] ^ K[i]);
+                M[o + j] = (byte) (S[(M[o + i] ^ M[o + j]) & 0xFF] ^ K[k + j]);
+                M[o + i] = (byte) (S[(M[o + i] ^ M[o + j]) & 0xFF] ^ K[k + i]);
                 i = (++i) & h;
                 j++;
             }
@@ -27,13 +27,13 @@ public class DC140713Algorithm2 extends AbstractAlgorithm {
         }
     }
 
-    public void dec(byte[] C, int o, byte[][] KK) {
-        int H = N >> 1, i = (H >> 1) + 1, v = R, h = H - 1;
+    public void dec(byte[] C, int o, byte[] K) {
+        int H = N >> 1, i = (H >> 1) + 1, h = H - 1;
         for (int r = 0; r < R; r++) {
-            byte[] K = KK[--v];
+            int k = N * (R - r - 1);
             for (int j = H; j < N; ) {
-                C[o + i] = (byte) ($[(C[o + i] ^ K[i]) & 0xFF] ^ C[o + j]);
-                C[o + j] = (byte) ($[(C[o + j] ^ K[j]) & 0xFF] ^ C[o + i]);
+                C[o + i] = (byte) ($[(C[o + i] ^ K[k + i]) & 0xFF] ^ C[o + j]);
+                C[o + j] = (byte) ($[(C[o + j] ^ K[k + j]) & 0xFF] ^ C[o + i]);
                 i = (++i) & h;
                 j++;
             }

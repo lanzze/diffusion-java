@@ -2,68 +2,81 @@ package com.aslan.module.cipher.keys.diffusion;
 
 import com.aslan.module.cipher.AlgorithmInfo;
 import com.aslan.module.cipher.CipherInfo;
+import com.aslan.module.cipher.keys.AbstractKey;
 import com.aslan.module.cipher.keys.Box;
 import com.aslan.module.utils.Utils;
 
-public abstract class DiffusionKey2 extends DiffusionKey1 {
+public abstract class DiffusionKey2 extends AbstractKey {
+    protected int N = 0;
+    protected int P = 0;
+    protected int R = 0;
+    protected int HH = 0;
+    protected byte[] S;
+    protected byte[] K;
 
     {
-        S1 = Box.V2.S;
+        S = Box.V2.N4_2;
+    }
+
+    public void setBox(byte[] box) {
+        S = box;
     }
 
     @Override
+    public void init(CipherInfo cipherInfo, AlgorithmInfo algorithmInfo) {
+        boolean alloc = N != algorithmInfo.N;
+        init(algorithmInfo);
+        if (alloc) alloc(algorithmInfo);
+        init(cipherInfo);
+        diffusion(K);
+    }
+
+    protected void alloc(AlgorithmInfo algorithmInfo) {
+        K = new byte[R * N];
+    }
+
     protected void init(AlgorithmInfo algorithmInfo) {
-        N = algorithmInfo.N;
-        R = algorithmInfo.R;
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        _N = algorithmInfo.R;
-        _G = (int) Math.ceil(Utils.log2(_N));
-        _P = 1 << _G - 1;
-        _H = (int) Math.ceil(_N * 1.0 / 2);
-        _R = _G;
+        N = algorithmInfo.R * algorithmInfo.N;
+        int G = (int) Math.ceil(Utils.log2(N));
+        P = 1 << G;
+        HH = (int) Math.ceil(N * 1.0 / 4);
+        R = G;
+
     }
 
 
     protected void init(CipherInfo cipherInfo) {
         byte[] key = cipherInfo.keyData;
-        int x = 0, L = key.length;
-        byte y = 0;
+        int x = 0, y = 0, L = key.length;
         for (int i = 0; i < R; i++) {
-            for (int j = 0; j < N; j++) {
-                K[i][j] = x >= L ? ++y : key[x++];
-            }
+            K[i] = x >= L ? (byte) ++y : key[x++];
         }
     }
 
-    protected byte[][] diffusion(byte[][] K) {
-        int i = 0;
-        for (int r = 1; r <= _R; r++) {
-            for (int x = 0, j = _H; x < _H; x++) {
-                diffusion(K[i], K[j]);
-                i = ++i == _H ? 0 : i;
-                j = ++j == _N ? _H : j;
+    @Override
+    public byte[] update() {
+        return K;
+    }
+
+    public byte[] diffusion(byte[] K) {
+        int a, b, c, d, p = 0, q = 0, H = N >> 1, PP = P >> 2, h = H - 1;
+        for (int r = 0; r < R; r++) {
+            for (int i = 0; i < HH; i++) {
+                a = (p + i) % H;
+                c = (q + i) % H + H;
+                b = ((h + p - i) % H);
+                d = ((h + q - i) % H) + H;
+                K[a] = S[(K[d] ^ K[a] ^ K[b]) & 0xFF];
+                K[c] = S[(K[a] ^ K[c] ^ K[d]) & 0xFF];
+                K[b] = S[(K[c] ^ K[b] ^ K[a]) & 0xFF];
+                K[d] = S[(K[b] ^ K[d] ^ K[c]) & 0xFF];
             }
-            i = _P >> r;
+            p = 1 << r;
+            q = PP >> r;
         }
         return K;
     }
 
-
-    public void diffusion(byte[] X, byte[] Y) {
-        int a = 0, b, c = 0, d, p = 0, q = 0, H = N >> 1, n = N - 1;
-        for (int r = 0; r < R; r++) {
-            for (int i = 0; i < N; i++) {
-                b = (n + p - i) & n;
-                d = (n + q - i) & n;
-                Y[c] = S1[(Y[d] ^ X[a] ^ Y[c]) & 0xFF];
-                X[b] = S1[(X[a] ^ Y[c] ^ X[b]) & 0xFF];
-                Y[d] = S1[(Y[c] ^ X[b] ^ Y[d]) & 0xFF];
-                // X[a] = S1[(X[b] ^ Y[d] ^ X[a]) & 0xFF];
-                a = ++a & n;
-                c = ++c & n;
-            }
-            p = a = N >> r + 1;
-            q = c = 1 << r;
-        }
+    public void diffusion(byte[] K, byte[] M) {
     }
 }

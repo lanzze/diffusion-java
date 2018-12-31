@@ -19,6 +19,10 @@ public class NotifyEvent {
         return name;
     }
 
+    public Object getAttachment() {
+        return attachment;
+    }
+
     public void stopPropagation() {
         this.stopPropagation = true;
     }

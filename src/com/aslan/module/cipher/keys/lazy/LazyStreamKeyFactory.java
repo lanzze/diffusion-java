@@ -6,7 +6,6 @@ public class LazyStreamKeyFactory extends VersionKeyFactory {
 
     {
         map.put(1, LazyStreamKey1.class);
-        map.put(2, LazyStreamKey2.class);
     }
 
 }

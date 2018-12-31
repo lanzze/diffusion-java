@@ -8,17 +8,12 @@ import com.aslan.module.cipher.keys.diffusion.DiffusionKey1;
 public class LazyStreamKey1 extends DiffusionKey1 {
     int[] indices = null;
 
-    public void init(CipherInfo cipherInfo, AlgorithmInfo algorithmInfo) {
-        super.init(cipherInfo, algorithmInfo);
-        update();
-    }
-
-    public byte[][] update() {
+    public byte[] update() {
         int x, v = R - 1, h = H - 1;
         for (int i = 0; i < R; i++, v--) {
             x = indices[i] & h;
-            byte[] U = K[i];
-            byte[] V = K[v];
+            byte[] U = KK[i];
+            byte[] V = KK[v];
             for (int y = H; y < N; ) {
                 U[y] = (byte) (S1[(U[y] ^ V[y])] ^ U[x]);
                 U[x] = (byte) (S2[(U[x] ^ V[x])] ^ U[y]);
@@ -27,6 +22,9 @@ public class LazyStreamKey1 extends DiffusionKey1 {
             }
             indices[i] = (indices[i] << 1);
             indices[i] = (indices[i]) > H ? 1 : indices[i];
+        }
+        for (int i = 0; i < R; i++) {
+            System.arraycopy(KK[i], 0, K, i * N, N);
         }
         return K;
     }

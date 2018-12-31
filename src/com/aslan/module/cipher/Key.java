@@ -1,10 +1,16 @@
 package com.aslan.module.cipher;
 
-public interface Key {
+import com.aslan.module.core.Usable;
 
+public interface Key extends Usable {
+
+    /**
+     * @param cipherInfo
+     * @param algorithmInfo
+     */
     void init(CipherInfo cipherInfo, AlgorithmInfo algorithmInfo);
 
-    byte[][] update();
+    byte[] update();
 
     int identity();
 
