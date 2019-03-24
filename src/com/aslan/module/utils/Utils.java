@@ -55,13 +55,20 @@ public class Utils {
     }
 
 
-    public static void print(byte[] B, String end) {
+    public static void print(byte[] B, String end, int line) {
         for (int i = 0; i < B.length; i++) {
             String hex = Integer.toHexString(B[i] & 0xFF);
             System.out.print((B[i] & 0xFF) < 16 ? "0" + hex : hex);
             System.out.print(' ');
+            if (line > 0 && (i + 1) % line == 0) {
+                System.out.println();
+            }
         }
         System.out.print(end);
+    }
+
+    public static void print(byte[] B, String end) {
+        print(B, end, -1);
     }
 
     public static void print(byte[] B) {

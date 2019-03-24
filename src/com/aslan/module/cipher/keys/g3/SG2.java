@@ -1,9 +1,9 @@
-package com.aslan.module.cipher.keys.fixed;
+package com.aslan.module.cipher.keys.g3;
 
 import com.aslan.module.cipher.Consts;
-import com.aslan.module.cipher.keys.diffusion.DiffusionKey2;
+import com.aslan.module.cipher.keys.diffusion.DiffusionGS2;
 
-public class FixedKey2 extends DiffusionKey2 {
+public class SG2 extends DiffusionGS2 {
 
     @Override
     public int identity() {
@@ -12,6 +12,6 @@ public class FixedKey2 extends DiffusionKey2 {
 
     @Override
     public int version() {
-        return 2;
+        return 31;
     }
 }

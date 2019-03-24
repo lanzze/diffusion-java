@@ -2,25 +2,17 @@ package com.aslan.module.cipher.keys.diffusion;
 
 import com.aslan.module.cipher.AlgorithmInfo;
 import com.aslan.module.cipher.CipherInfo;
+import com.aslan.module.cipher.algorithms.Box;
 import com.aslan.module.cipher.keys.AbstractKey;
-import com.aslan.module.cipher.keys.Box;
 import com.aslan.module.utils.Utils;
 
-public abstract class DiffusionKey2 extends AbstractKey {
+public abstract class DiffusionGS1 extends AbstractKey {
+    protected byte[] S = Box.V2.ENC_BOX;
     protected int N = 0;
     protected int P = 0;
     protected int R = 0;
     protected int HH = 0;
-    protected byte[] S;
     protected byte[] K;
-
-    {
-        S = Box.V2.N4_2;
-    }
-
-    public void setBox(byte[] box) {
-        S = box;
-    }
 
     @Override
     public void init(CipherInfo cipherInfo, AlgorithmInfo algorithmInfo) {
@@ -32,7 +24,7 @@ public abstract class DiffusionKey2 extends AbstractKey {
     }
 
     protected void alloc(AlgorithmInfo algorithmInfo) {
-        K = new byte[R * N];
+        K = new byte[N];
     }
 
     protected void init(AlgorithmInfo algorithmInfo) {
@@ -46,10 +38,10 @@ public abstract class DiffusionKey2 extends AbstractKey {
 
 
     protected void init(CipherInfo cipherInfo) {
-        byte[] key = cipherInfo.keyData;
-        int x = 0, y = 0, L = key.length;
-        for (int i = 0; i < R; i++) {
-            K[i] = x >= L ? (byte) ++y : key[x++];
+        int len = Math.min(N, cipherInfo.keyData.length);
+        System.arraycopy(cipherInfo.keyData, 0, K, 0, len);
+        for (int i = len, j = 1; i < N; i++) {
+            K[i] = (byte) j++;
         }
     }
 
@@ -73,10 +65,13 @@ public abstract class DiffusionKey2 extends AbstractKey {
             }
             p = 1 << r;
             q = PP >> r;
+//            System.out.print(String.format("第%d轮，r=%d，输出：\n", r + 1, r));
+//            Utils.print(K, "", 16);
         }
         return K;
     }
 
-    public void diffusion(byte[] K, byte[] M) {
+    public void run() {
+        diffusion(K);
     }
 }

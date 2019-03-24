@@ -1,6 +1,6 @@
 package com.aslan.module.core;
 
-import com.aslan.module.cipher.keys.Box;
+import com.aslan.module.cipher.algorithms.Box;
 import com.aslan.module.utils.Utils;
 
 import java.io.IOException;
@@ -16,14 +16,14 @@ public class Sbox {
 
     public static void main(String[] args) throws IOException {
 
-        byte[] box = make();
+        byte[] box = Box.V2.ENC_BOX;
         // byte[] box = very();
-        adjust(box);
+//        adjust(box);
         validate(box, "box");
         byte[] map = map(box);
         validate(map, "map");
         check(box, map);
-        print(box);
+        print(map);
 
 
 //        byte[] S = com.aslan.module.cipher.keys.Box.V2.S;

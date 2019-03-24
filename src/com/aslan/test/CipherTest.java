@@ -4,14 +4,12 @@ import com.aslan.module.cipher.*;
 import com.aslan.module.cipher.Consts;
 import com.aslan.module.cipher.algorithms.Box;
 import com.aslan.module.cipher.algorithms.dc140731.DC140713Algorithm3;
-import com.aslan.module.cipher.keys.diffusion.DiffusionKey2;
 import com.aslan.module.core.Sbox;
 import com.aslan.module.utils.Utils;
 import sts.Sts;
 import sts.analyze.*;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.*;
@@ -20,16 +18,10 @@ public class CipherTest {
     static byte[] V = {
             (byte) 0x01, (byte) 0x23, (byte) 0x45, (byte) 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
             (byte) 0xfe, (byte) 0xdc, (byte) 0xba, (byte) 0x98, (byte) 0x76, (byte) 0x54, (byte) 0x32, (byte) 0x10,
-            (byte) 0x0f, (byte) 0x1e, (byte) 0x2d, (byte) 0x3c, (byte) 0x4b, (byte) 0x5a, (byte) 0x69, (byte) 0x78,
-            (byte) 0x87, (byte) 0x96, (byte) 0xa5, (byte) 0xb4, (byte) 0xc3, (byte) 0xd2, (byte) 0xe1, (byte) 0xf0,
+            (byte) 0x00, (byte) 0x11, (byte) 0x22, (byte) 0x33, (byte) 0x44, (byte) 0x55, (byte) 0x66, (byte) 0x77,
+            (byte) 0x88, (byte) 0x99, (byte) 0xaa, (byte) 0xbb, (byte) 0xcc, (byte) 0xdd, (byte) 0xee, (byte) 0xff,
     };
-    //    static byte[] V = {
-//            (byte) 0xf0, (byte) 0xe1, (byte) 0xd2, (byte) 0xc3, (byte) 0xb4, (byte) 0xa5, (byte) 0x96, (byte) 0x87,
-//            (byte) 0x78, (byte) 0x69, (byte) 0x5a, (byte) 0x4b, (byte) 0x3c, (byte) 0x2d, (byte) 0x1e, (byte) 0x0f,
-//            (byte) 0x0f, (byte) 0x1e, (byte) 0x2d, (byte) 0x3c, (byte) 0x4b, (byte) 0x5a, (byte) 0x69, (byte) 0x78,
-//            (byte) 0x87, (byte) 0x96, (byte) 0xa5, (byte) 0xb4, (byte) 0xc3, (byte) 0xd2, (byte) 0xe1, (byte) 0xf0,
-//    };
-    static int count = 1000000;
+
     static byte[] seed1 = Box.V1.ENC_BOX;
     static byte[] seed2 = com.aslan.module.cipher.keys.Box.V1.S1;
     static byte[] seed3 = com.aslan.module.cipher.keys.Box.V1.S2;
@@ -38,35 +30,36 @@ public class CipherTest {
     static Random r1 = new SecureRandom(seed1);
     static Random r2 = new SecureRandom(seed2);
     static Random r3 = new SecureRandom(seed3);
+    static Random r4 = new SecureRandom(Box.V2.ENC_BOX);
     static Random rr = new SecureRandom();
 
-    static int g = 0;
+    static int g = 0, TOTAL = 0;
 
     static {
-        r3.nextBytes(rands);
+        r4.nextBytes(rands);
         System.loadLibrary("libdfft");
     }
 
 
     public static void main(String[] args) throws Exception {
 //        fixed();
+        testSG2();
+//        sample(Box.V2.ENC_BOX);
         //        fixedWithNoKeyUpdate_a3();
         //        stream_lazy();
         //        randomTest_streamLazy();
 //        sbox_test_change();
         //        sbox_test();
-////        fixed();
+//        fixed();
 //        while (true) {
 //            key();
 //            g++;
 //        }
-        sample(com.aslan.module.cipher.keys.Box.V2.N4_2);
-
-//        rand(new byte[256], 256);
+//        testbox();
     }
 
     public static void key() throws Exception {
-        int N = 32;
+        int N = 1024 * 1024;
         AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
         CipherInfo cipherInfo = new CipherInfo();
         cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
@@ -79,7 +72,10 @@ public class CipherTest {
         Algorithm algorithm = AlgorithmBuilder.make(cipherInfo);
         algorithm.init(algorithmInfo);
         byte[] box = findBox2((DC140713Algorithm3) algorithm, N, algorithmInfo.R);
-        sample(box);
+        if (sample(box)) {
+            Files.write(new File(String.format("F:\\temp\\box\\box-[%3d][%5d].dat", g, TOTAL)).toPath(), box);
+            System.out.println(String.format("Random Excursion Count: %5d at %3d", TOTAL, g));
+        }
         //one enc
 //        algorithmInfo.R = 5;
 //        algorithmInfo.N = 8;
@@ -95,6 +91,29 @@ public class CipherTest {
 
     }
 
+    public static void testSG2() throws Exception {
+        int N = 32;
+        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
+        CipherInfo cipherInfo = new CipherInfo();
+        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
+        cipherInfo.algorithmV = 3;
+        cipherInfo.key = Consts.KEYS.FIXED;
+        cipherInfo.keyV = 10;
+        cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
+
+        DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
+        algorithm.init(algorithmInfo);
+
+        byte[] K = new byte[algorithmInfo.R * N];
+        for (int i = 0; i < K.length; i++) {
+            K[i] = (byte) (i % N);
+        }
+        byte[] M = new byte[N];
+        algorithm.enc(M, 0, K);
+        System.out.println();
+        Utils.print(M, "\n");
+    }
+
     public static void fixed() throws Exception {
         int N = 32;
         AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
@@ -102,101 +121,46 @@ public class CipherTest {
         cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
         cipherInfo.algorithmV = 3;
         cipherInfo.key = Consts.KEYS.FIXED;
-        cipherInfo.keyV = 2;
+        cipherInfo.keyV = 10;
         cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
 
         Key key = KeyBuilder.make(cipherInfo);
         DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
         algorithm.init(algorithmInfo);
 
-        //one enc
+
+//        //one enc
         key.init(cipherInfo, algorithmInfo);
         byte[] M = V.clone();
         algorithm.enc(M, 0, key.update());
         System.out.println("\nAfter enc 1:");
         Utils.print(M, "\n");
-
-        algorithm.show = false;
-
-        //one dec
-        key.init(cipherInfo, algorithmInfo);
-        byte[] C = M.clone();
-        algorithm.dec(C, 0, key.update());
-        System.out.println("\nAfter dec 1:");
-        Utils.print(C, "\n");
-
-        //1000000 enc
-        key.init(cipherInfo, algorithmInfo);
-        byte[] MM = V.clone();
-        for (int i = 0; i < count; i++) {
-            algorithm.enc(MM, 0, key.update());
-        }
-        System.out.println("\nAfter enc " + count + ": ");
-        Utils.print(MM, "\n");
-
-        //1000000 dec
-        key.init(cipherInfo, algorithmInfo);
-        byte[] CC = MM.clone();
-        for (int i = 0; i < count; i++) {
-            algorithm.dec(CC, 0, key.update());
-        }
-        System.out.println("\nAfter dec " + count + ": ");
-        Utils.print(CC, "\n");
-    }
-
-    public static void stream_diligent() throws Exception {
-        int N = 16;
-        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
-        CipherInfo cipherInfo = new CipherInfo();
-        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
-        cipherInfo.algorithmV = 2;
-        cipherInfo.key = Consts.KEYS.STREAM_DILIGENT;
-        cipherInfo.keyV = 1;
-        byte[] kd = new byte[N * algorithmInfo.R];
-        cipherInfo.keyData = kd;
-        Arrays.fill(kd, (byte) 1);
-        Key key = KeyBuilder.make(cipherInfo);
-        key.init(cipherInfo, algorithmInfo);
-        Algorithm algorithm = AlgorithmBuilder.make(cipherInfo);
-        algorithm.init(algorithmInfo);
-        byte[] M = new byte[N];
-        Arrays.fill(M, (byte) 1);
-        algorithm.enc(M, 0, key.update());
-        System.out.println("After dec:");
-
-        key.init(cipherInfo, algorithmInfo);
-        algorithm.init(algorithmInfo);
-        algorithm.dec(M, 0, key.update());
-        System.out.println("After dec:");
-        System.out.println(Arrays.toString(M));
-    }
-
-
-    public static void stream_lazy() throws Exception {
-        int N = 16384;
-        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
-        CipherInfo cipherInfo = new CipherInfo();
-        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
-        cipherInfo.algorithmV = 2;
-        cipherInfo.key = Consts.KEYS.STREAM_LAZY;
-        cipherInfo.keyV = 2;
-        byte[] kd = new byte[N * algorithmInfo.R];
-        cipherInfo.keyData = kd;
-        Arrays.fill(kd, (byte) 1);
-        Key key = KeyBuilder.make(cipherInfo);
-        key.init(cipherInfo, algorithmInfo);
-        Algorithm algorithm = AlgorithmBuilder.make(cipherInfo);
-        algorithm.init(algorithmInfo);
-        byte[] M = new byte[N];
-        Arrays.fill(M, (byte) 1);
-        algorithm.enc(M, 0, key.update());
-        System.out.println("After enc:");
-        System.out.println(Arrays.toString(M));
-        key.init(cipherInfo, algorithmInfo);
-        algorithm.init(algorithmInfo);
-        algorithm.dec(M, 0, key.update());
-        System.out.println("After dec:");
-        System.out.println(Arrays.toString(M));
+////
+//        //one dec
+//        key.init(cipherInfo, algorithmInfo);
+//        byte[] C = M.clone();
+//        algorithm.dec(C, 0, key.update());
+//        System.out.println("\nAfter dec 1:");
+//        Utils.print(C, "\n");
+//
+//        //1000000 enc
+//        int count = 1000000;
+//        key.init(cipherInfo, algorithmInfo);
+//        byte[] MM = V.clone();
+//        for (int i = 0; i < count; i++) {
+//            algorithm.enc(MM, 0, key.update());
+//        }
+//        System.out.println("\nAfter enc " + count + ": ");
+//        Utils.print(MM, "\n");
+//
+//        //1000000 dec
+//        key.init(cipherInfo, algorithmInfo);
+//        byte[] CC = MM.clone();
+//        for (int i = 0; i < count; i++) {
+//            algorithm.dec(CC, 0, key.update());
+//        }
+//        System.out.println("\nAfter dec " + count + ": ");
+//        Utils.print(CC, "\n");
     }
 
 
@@ -215,86 +179,134 @@ public class CipherTest {
         }
     }
 
-    private static void findBox(DiffusionKey2 k, int N) throws Exception {
-        byte[] buf = new byte[N << 1];
-        byte[] X = new byte[N];
-        byte[] Y = new byte[N];
-        double limit = 0.01;
-        long count = 0;
-        boolean validate = true;
-        Result[][] finals = new Result[6][];
-        while (true) {
-            if (++count % 100 == 0) {
-                System.out.println("Found times: " + count);
-            }
-            byte[] box = Sbox.trys();
-            k.setBox(box);
-            Arrays.fill(X, (byte) 0);
-            Arrays.fill(Y, (byte) 0);
-            k.diffusion(X, Y);
-            System.arraycopy(X, 0, buf, 0, N);
-            System.arraycopy(Y, 0, buf, N, N);
-            Result[] results = Sts.from(buf, N << 1);
-            if (validate && !Sts.over(results, limit)) continue;
-            finals[0] = results;
+    private static void testbox() throws Exception {
+        int N = 1024 * 1024;
+        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
+        CipherInfo cipherInfo = new CipherInfo();
+        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
+        cipherInfo.algorithmV = 3;
+        cipherInfo.key = Consts.KEYS.FIXED;
+        cipherInfo.keyV = 2;
+        Algorithm algorithm = AlgorithmBuilder.make(cipherInfo);
+        algorithm.init(algorithmInfo);
 
-            Arrays.fill(X, (byte) 1);
-            Arrays.fill(Y, (byte) 1);
-            k.diffusion(X, Y);
-            System.arraycopy(X, 0, buf, 0, N);
-            System.arraycopy(Y, 0, buf, N, N);
-            results = Sts.from(buf, N << 1);
-            if (validate && !Sts.over(results, limit)) continue;
-            finals[1] = results;
+        DC140713Algorithm3 dc3 = (DC140713Algorithm3) algorithm;
+        File[] files = new File("F:\\temp\\box\\").listFiles();
+        Map<File, List<Result[]>> map = new HashMap<>();
 
-            fill(X, false);
-            fill(Y, false);
-            k.diffusion(X, Y);
-            System.arraycopy(X, 0, buf, 0, N);
-            System.arraycopy(Y, 0, buf, N, N);
-            results = Sts.from(buf, N << 1);
-            if (validate && !Sts.over(results, limit)) continue;
-            finals[2] = results;
-
-            fill(X, true);
-            fill(Y, true);
-            k.diffusion(X, Y);
-            System.arraycopy(X, 0, buf, 0, N);
-            System.arraycopy(Y, 0, buf, N, N);
-            results = Sts.from(buf, N << 1);
-            if (validate && !Sts.over(results, limit)) continue;
-            finals[3] = results;
-
-            rr.nextBytes(X);
-            rr.nextBytes(Y);
-            k.diffusion(X, Y);
-            System.arraycopy(X, 0, buf, 0, N);
-            System.arraycopy(Y, 0, buf, N, N);
-            results = Sts.from(buf, N << 1);
-            if (validate && !Sts.over(results, limit)) continue;
-            finals[4] = results;
-
-            rr.nextBytes(X);
-            rr.nextBytes(Y);
-            k.diffusion(X, Y);
-            System.arraycopy(X, 0, buf, 0, N);
-            System.arraycopy(Y, 0, buf, N, N);
-            results = Sts.from(buf, N << 1);
-            if (validate && !Sts.over(results, limit)) continue;
-            finals[5] = results;
-
-
-            Files.write(new File("F:\\temp\\box.dat").toPath(), box);
-            System.out.println("found box: ");
-            Sbox.print(box);
-            Sbox.print2(Sbox.diff(box));
-            for (Result[] e : finals) {
-                System.out.println("--------------------------------------------------------------------------------------");
-                Sts.print(e);
-            }
-            break;
+        Map<File, byte[]> boxs = new HashMap<>();
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            boxs.put(file, Files.readAllBytes(file.toPath()));
+            map.put(file, new ArrayList<>());
         }
+        int inc = 0;
+        while (map.size() > 1) {
+            System.out.println("has : " + map.size());
+            for (int i = 0; i < 500; i++) {
+                Random random = new SecureRandom();
+                byte[] M = new byte[N];
+                byte[] K = new byte[N * algorithmInfo.R];
+                random.nextBytes(M);
+                random.nextBytes(K);
+                for (File file : map.keySet()) {
+                    byte[] m = M.clone();
+                    dc3.setBox(boxs.get(file));
+                    dc3.enc(m, 0, K.clone());
+                    Result[] results = analyze(analyzes, N, m);
+                    if (check(results)) {
+                        map.get(file).add(results);
+                    }
+                }
+            }
+            File dir = new File(String.format("F:\\temp\\sts-%d\\", inc++));
+            dir.mkdirs();
+            map.forEach((file, result) -> {
+                try {
+                    write(result, String.format(dir.getAbsolutePath() + "\\sts-(%3s)-%s", result.size(), file.getName()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            size = 1000;
+            map.values().forEach(e -> {
+                if (e.size() < size) size = e.size();
+            });
+            Iterator<Map.Entry<File, List<Result[]>>> iterator = map.entrySet().iterator();
 
+            while (iterator.hasNext()) {
+                Map.Entry<File, List<Result[]>> next = iterator.next();
+                if (next.getValue().size() <= size + 1) {
+                    iterator.remove();
+                }
+                next.getValue().clear();
+            }
+        }
+    }
+
+    static int size = 0;
+
+
+    public static boolean check(Result[] results) {
+        for (Result result : results) {
+            if (result == null) return false;
+            if (result.value == 0 && result.items == null) return false;
+        }
+        return true;
+    }
+
+    private static void testBox(DC140713Algorithm3 a, int N, int R, byte[] box) throws Exception {
+        byte[] M = new byte[N], m;
+        byte[] K = new byte[N * R];
+        list.clear();
+        a.setBox(box);
+        Random r3 = new SecureRandom(Box.V2.ENC_BOX);
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
+
+        m = M.clone();
+        r3.nextBytes(m);
+        a.enc(m, 0, K);
+        list.add(analyze(analyzes, N, m));
     }
 
     private static byte[] findBox2(DC140713Algorithm3 a, int N, int R) throws Exception {
@@ -356,11 +368,7 @@ public class CipherTest {
                 BOX = box.clone();
             }
         }
-        Files.write(new File(String.format("F:\\temp\\box\\box-[%3d][%5d].dat", g, total)).toPath(), BOX);
-//        System.out.println("found completed, total is: " + total);
-//        Sbox.print(BOX);
-//        Sbox.print2(Sbox.diff(BOX));
-        System.out.println(String.format("Random Excursion Count: %5d at %3d", total, g));
+        TOTAL = total;
         return BOX;
     }
 
@@ -385,24 +393,11 @@ public class CipherTest {
         return J;
     }
 
-    private static boolean sample(byte[] box) throws Exception {
-        int N = 256;
-        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
-        CipherInfo cipherInfo = new CipherInfo();
-        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
-        cipherInfo.algorithmV = 3;
-        cipherInfo.key = Consts.KEYS.FIXED;
-        cipherInfo.keyV = 2;
-//        cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
+    static List<Result[]> list = new ArrayList<>();
 
-//        Key key = KeyBuilder.make(cipherInfo);
-        DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
-        algorithm.setBox(box);
-        algorithm.init(algorithmInfo);
+    static List<Analyze> analyzes = new ArrayList<>();
 
-
-        List<Result[]> list = new ArrayList<>();
-        List<Analyze> analyzes = new ArrayList<>();
+    static {
         //@formatter:off
         analyzes.add(new Frequency());                  //0
         analyzes.add(new BlockFrequency());             //1
@@ -420,6 +415,26 @@ public class CipherTest {
         analyzes.add(new RandomExcursionVariant());     //12
         analyzes.add(new NonOverlappingTemplate());     //7
         //@formatter:on
+    }
+
+
+    private static boolean sample(byte[] box) throws Exception {
+        int N = 256;
+        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
+        CipherInfo cipherInfo = new CipherInfo();
+        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
+        cipherInfo.algorithmV = 3;
+        cipherInfo.key = Consts.KEYS.FIXED;
+        cipherInfo.keyV = 2;
+//        cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
+
+//        Key key = KeyBuilder.make(cipherInfo);
+        DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
+        algorithm.setBox(box);
+        algorithm.init(algorithmInfo);
+
+        list.clear();
+
 
         int ROUND = 16;
         int NN = N * (N + 1) * ROUND;
@@ -553,37 +568,6 @@ public class CipherTest {
         algorithm.enc(MM, 0, KK);
         list.add(analyze(analyzes, NN, MM));
 
-        for (int i = 0; i < 9; i++) {
-            for (Result result : list.get(i)) {
-                if (result == null) return false;
-            }
-        }
-
-        List<StringBuilder> lines = new ArrayList<>();
-
-        int f = 0;
-        for (Analyze analyze : analyzes) {
-            String name = analyze.getClass().getSimpleName();
-            Result[] results = list.get(0);
-            if (results[f] != null && results[f].items != null) {
-                for (int i = 0; i < results[f].items.length; i++) {
-                    StringBuilder line = new StringBuilder(String.format("%30s %10s\t\t", name, results[f].items[i].name));
-                    for (int j = 0; j < 9; j++) {
-                        results = list.get(j);
-                        line.append(String.format("%6f\t", results[f] != null ? results[f].items != null ? results[f].items[i].value : 0 : 0));
-                    }
-                    lines.add(line.append("\n"));
-                }
-            } else {
-                StringBuilder line = new StringBuilder(String.format("%30s %10s\t\t", name, "-"));
-                for (int i = 0; i < 9; i++) {
-                    results = list.get(i);
-                    line.append(String.format("%6f\t", results[f] != null ? results[f].value : 0));
-                }
-                lines.add(line.append("\n"));
-            }
-            f++;
-        }
         boolean valid = true;
         out:
         for (int i = 0; i < 9; i++) {
@@ -594,13 +578,13 @@ public class CipherTest {
                 }
             }
         }
-        System.out.println(valid ? "valid" : "invalid");
-        if (valid || true) {
+
+
+        if (valid) {
             System.out.println("found one at: " + g);
-            String path = String.format("F:\\temp\\sts\\all-%d.txt", g);
-            Files.write(new File(path).toPath(), Arrays.toString(lines.toArray()).getBytes());
+            write(list, String.format("F:\\temp\\sts\\all-%d.txt", g));
         }
-        return true;
+        return valid;
     }
 
     private static Result[] analyze(List<Analyze> analyzes, int n, byte[] data) {
@@ -639,5 +623,36 @@ public class CipherTest {
         for (int i = 0; i < N; i++) {
             B[i] += 0x1;
         }
+    }
+
+    private static void write(List<Result[]> list, String file) throws Exception {
+        List<StringBuilder> lines = new ArrayList<>();
+        int f = 0, size = list.size();
+        Result[] template = list.get(0);
+        for (Analyze analyze : analyzes) {
+            String name = analyze.getClass().getSimpleName();
+            if (template[f] != null && template[f].items != null) {
+                for (int i = 0; i < template[f].items.length; i++) {
+                    StringBuilder line = new StringBuilder(String.format("%30s, %10s,\t\t", name, template[f].items[i].name));
+                    for (int j = 0; j < size; j++) {
+                        Result[] results = list.get(j);
+                        line.append(String.format("%6f,\t", results[f] != null ? results[f].items != null ? results[f].items[i].value : 0 : 0));
+                    }
+                    lines.add(line.append("\n"));
+                }
+            } else if (template[f] != null) {
+                StringBuilder line = new StringBuilder(String.format("%30s, %10s,\t\t", name, "-"));
+                for (int i = 0; i < size; i++) {
+                    Result[] results = list.get(i);
+                    line.append(String.format("%6f,\t", results[f] != null ? results[f].value : 0));
+                }
+                lines.add(line.append("\n"));
+            } else {
+                System.out.println("not pass:" + file);
+                return;
+            }
+            f++;
+        }
+        Files.write(new File(file).toPath(), Arrays.toString(lines.toArray()).getBytes());
     }
 }
