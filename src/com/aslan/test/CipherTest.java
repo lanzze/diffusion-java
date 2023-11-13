@@ -4,15 +4,18 @@ import com.aslan.module.cipher.*;
 import com.aslan.module.cipher.Consts;
 import com.aslan.module.cipher.algorithms.Box;
 import com.aslan.module.cipher.algorithms.dc140731.DC140713Algorithm3;
+import com.aslan.module.cipher.keys.fixed.DCA_C1_FixedKey;
 import com.aslan.module.core.Sbox;
 import com.aslan.module.utils.Utils;
 import sts.Sts;
 import sts.analyze.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CipherTest {
     static byte[] V = {
@@ -42,9 +45,14 @@ public class CipherTest {
 
 
     public static void main(String[] args) throws Exception {
+
+
+//        writeFileTest();
 //        fixed();
-        testSG2();
-//        sample(Box.V2.ENC_BOX);
+
+//        testSG2();
+
+        sample(Box.V2.ENC_BOX);
         //        fixedWithNoKeyUpdate_a3();
         //        stream_lazy();
         //        randomTest_streamLazy();
@@ -56,7 +64,17 @@ public class CipherTest {
 //            g++;
 //        }
 //        testbox();
+
+//        for (int i = 3; i < 30; i++) {
+//            int n = 1 << i;
+//            long r = i + 1L;
+//            long c = n * r;
+//            System.out.println(String.format("n=%d,r=%d,n*r=%d,h=%f,hh=%f", n, r, c, c / 2.0, c / 4.0));
+//        }
+
+
     }
+
 
     public static void key() throws Exception {
         int N = 1024 * 1024;
@@ -98,24 +116,96 @@ public class CipherTest {
         cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
         cipherInfo.algorithmV = 3;
         cipherInfo.key = Consts.KEYS.FIXED;
-        cipherInfo.keyV = 10;
-        cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
+        cipherInfo.keyV = 20;
+        cipherInfo.keyData = V;
+
+
+        System.out.println(String.format("Algorithm:(N=%2d, R=%2d)\n", algorithmInfo.N, algorithmInfo.R));
+
+        Key key = KeyBuilder.make(cipherInfo);
+        key.init(cipherInfo, algorithmInfo);
+
+        Utils.print(key.update(), "\n", 32);
 
         DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
         algorithm.init(algorithmInfo);
 
-        byte[] K = new byte[algorithmInfo.R * N];
-        for (int i = 0; i < K.length; i++) {
-            K[i] = (byte) (i % N);
-        }
         byte[] M = new byte[N];
-        algorithm.enc(M, 0, K);
-        System.out.println();
-        Utils.print(M, "\n");
+        System.arraycopy(V, 0, M, 0, 32);
+        algorithm.enc(M, 0, key.update());
+
+        Utils.print(M, "\n", 32);
+
+        algorithm.dec(M, 0, key.update());
+
+        Utils.print(M, "\n", 32);
+
     }
 
+    /**
+     * 申请文档的加密测试
+     *
+     * @throws Exception
+     */
     public static void fixed() throws Exception {
         int N = 32;
+        AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
+        CipherInfo cipherInfo = new CipherInfo();
+        cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
+        cipherInfo.algorithmV = 3;
+        cipherInfo.key = Consts.KEYS.FIXED;
+        cipherInfo.keyV = 10;
+        cipherInfo.keyData = V.clone();
+
+        Key key = KeyBuilder.make(cipherInfo);
+        DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
+        algorithm.init(algorithmInfo);
+
+
+        //one enc
+        key.init(cipherInfo, algorithmInfo);
+        byte[] M = V.clone();
+        algorithm.enc(M, 0, key.update());
+        System.out.println("\nAfter enc 1:");
+        Utils.print(M, "\n");
+
+////
+//        one dec
+//        key.init(cipherInfo, algorithmInfo);
+        byte[] C = M.clone();
+        algorithm.dec(C, 0, key.update());
+        System.out.println("\nAfter dec 1:");
+        Utils.print(C, "\n");
+//
+//        //1000000 enc
+//        int max = 1024 * 1024 * 1024;
+//        int count = max / N;
+//        int count = 1000000;
+//        key.init(cipherInfo, algorithmInfo);
+//        long start = System.currentTimeMillis();
+//        byte[] MM = V.clone();
+//        for (int i = 0; i < count; i++) {
+//            algorithm.enc(MM, 0, key.update());
+//        }
+//        long end = System.currentTimeMillis();
+//        System.out.println("\nAfter enc " + count + ": ");
+//        System.out.println("\nUse time:" + (end - start));
+//        Utils.print(MM, "\n");
+//
+//        //1000000 dec
+////        key.init(cipherInfo, algorithmInfo);
+//        byte[] CC = MM.clone();
+//        for (int i = 0; i < count; i++) {
+//            algorithm.dec(CC, 0, key.update());
+//        }
+//        System.out.println("\nAfter dec " + count + ": ");
+//        Utils.print(CC, "\n");
+
+
+    }
+
+    public static void writeFileTest() throws Exception {
+        int N = 1024;
         AlgorithmInfo algorithmInfo = Utils.computeAlgorithmInfo(N, null);
         CipherInfo cipherInfo = new CipherInfo();
         cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
@@ -130,48 +220,32 @@ public class CipherTest {
 
 
 //        //one enc
+        byte[] bytes = new byte[N * 100];
+        FileOutputStream out = new FileOutputStream("A:\\sin.txt");
         key.init(cipherInfo, algorithmInfo);
-        byte[] M = V.clone();
-        algorithm.enc(M, 0, key.update());
-        System.out.println("\nAfter enc 1:");
-        Utils.print(M, "\n");
-////
-//        //one dec
-//        key.init(cipherInfo, algorithmInfo);
-//        byte[] C = M.clone();
-//        algorithm.dec(C, 0, key.update());
-//        System.out.println("\nAfter dec 1:");
-//        Utils.print(C, "\n");
-//
-//        //1000000 enc
-//        int count = 1000000;
-//        key.init(cipherInfo, algorithmInfo);
-//        byte[] MM = V.clone();
-//        for (int i = 0; i < count; i++) {
-//            algorithm.enc(MM, 0, key.update());
-//        }
-//        System.out.println("\nAfter enc " + count + ": ");
-//        Utils.print(MM, "\n");
-//
-//        //1000000 dec
-//        key.init(cipherInfo, algorithmInfo);
-//        byte[] CC = MM.clone();
-//        for (int i = 0; i < count; i++) {
-//            algorithm.dec(CC, 0, key.update());
-//        }
-//        System.out.println("\nAfter dec " + count + ": ");
-//        Utils.print(CC, "\n");
-    }
+        for (int i = 0; i < 100; i++) {
+            algorithm.enc(bytes, i * N, key.update());
+        }
+        out.write(bytes);
+        out.close();
 
+        File file = new File("A:\\sin.txt");
+        byte[] data = Files.readAllBytes(file.toPath());
+        for (int i = 0; i < 100; i++) {
+            algorithm.dec(data, i * N, key.update());
+        }
+        FileOutputStream out2 = new FileOutputStream("A:\\sot.txt");
+        out2.write(data);
+        out2.close();
+    }
 
     private static byte[] initKey2(int r, int n) {
         byte[] K = new byte[r * n];
         for (int i = 0; i < r; i++) {
-            System.arraycopy(V, 0, K, i * n, n);
+//            System.arraycopy(V, 0, K, i * n, n);
         }
         return K;
     }
-
 
     private static void fill(byte[] b, boolean rand) {
         for (int i = 0; i < b.length; i++) {
@@ -246,7 +320,6 @@ public class CipherTest {
 
     static int size = 0;
 
-
     public static boolean check(Result[] results) {
         for (Result result : results) {
             if (result == null) return false;
@@ -255,7 +328,7 @@ public class CipherTest {
         return true;
     }
 
-    private static void testBox(DC140713Algorithm3 a, int N, int R, byte[] box) throws Exception {
+    private static List<Result[]> testBox(DC140713Algorithm3 a, int N, int R, byte[] box) throws Exception {
         byte[] M = new byte[N], m;
         byte[] K = new byte[N * R];
         list.clear();
@@ -307,6 +380,8 @@ public class CipherTest {
         r3.nextBytes(m);
         a.enc(m, 0, K);
         list.add(analyze(analyzes, N, m));
+
+        return list;
     }
 
     private static byte[] findBox2(DC140713Algorithm3 a, int N, int R) throws Exception {
@@ -425,12 +500,12 @@ public class CipherTest {
         cipherInfo.algorithm = Consts.ALGORITHMS.DC140713;
         cipherInfo.algorithmV = 3;
         cipherInfo.key = Consts.KEYS.FIXED;
-        cipherInfo.keyV = 2;
-//        cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
+        cipherInfo.keyV = 10;
+        cipherInfo.keyData = initKey2(algorithmInfo.R, algorithmInfo.N);
 
 //        Key key = KeyBuilder.make(cipherInfo);
         DC140713Algorithm3 algorithm = (DC140713Algorithm3) AlgorithmBuilder.make(cipherInfo);
-        algorithm.setBox(box);
+//        algorithm.setBox(box);
         algorithm.init(algorithmInfo);
 
         list.clear();
@@ -582,7 +657,7 @@ public class CipherTest {
 
         if (valid) {
             System.out.println("found one at: " + g);
-            write(list, String.format("F:\\temp\\sts\\all-%d.txt", g));
+            write(list, String.format("A:\\sts\\all-%d.txt", g));
         }
         return valid;
     }
@@ -593,7 +668,7 @@ public class CipherTest {
         for (int i = 0; i < analyzes.size(); i++) {
             Analyze analyze = analyzes.get(i);
             try {
-                results[i] = analyze.analyze(n, analyze.block(), bits);
+                results[i] = analyze.analyze(n*8, analyze.block(), bits);
             } catch (Exception e) {
 
             }

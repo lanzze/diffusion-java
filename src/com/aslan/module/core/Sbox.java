@@ -86,19 +86,22 @@ public class Sbox {
     public static void print2(byte[] codes) {
         for (int i = 1; i <= SIZE; i++) {
             String hex = Integer.toHexString(codes[i - 1] & 0xff);
-            System.out.print(hex);
-            System.out.print(" ");
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            System.out.print("(byte)0x" + hex);
+            System.out.print(", ");
             if (i % 16 == 0) {
                 System.out.println();
             }
         }
     }
 
-    public static void check(byte[] S, byte[] _S) {
+    public static void check(byte[] S, byte[] $) {
         boolean valid = true;
         for (int i = 0; i < SIZE; i++) {
             byte v = S[i];
-            int _v = _S[v & 0xff] & 0xFF;
+            int _v = $[v & 0xff] & 0xFF;
             if (_v != i) {
                 System.out.println("Check failed at: " + i);
                 valid = false;

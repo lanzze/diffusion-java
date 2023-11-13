@@ -6,6 +6,8 @@ import com.aslan.module.cipher.algorithms.AbstractAlgorithm;
 import com.aslan.module.cipher.algorithms.Box;
 import com.aslan.module.utils.Utils;
 
+import java.util.Arrays;
+
 public class DC140713Algorithm3 extends AbstractAlgorithm {
 
     {
@@ -13,16 +15,16 @@ public class DC140713Algorithm3 extends AbstractAlgorithm {
         this.$ = Box.V2.DEC_BOX;
     }
 
-
     public void setBox(byte[] box) {
         this.S = box;
     }
-
 
     public void enc(byte[] M, int o, byte[] K) {
         int a, b, c, d, p = 0, q = 0, k = 0, H = N >> 1, HH = N >> 2, h = H - 1;
         for (int r = 0; r < R; r++, k += N) {
             for (int i = 0; i < HH; i++) {
+
+
                 a = o + (p + i);
                 c = o + (q + i) + H;
                 b = o + ((h + p - i) & h);
@@ -34,8 +36,6 @@ public class DC140713Algorithm3 extends AbstractAlgorithm {
             }
             p = (1 << r) & h;
             q = HH >> r;
-//            System.out.print(String.format("第%d轮，r=%d，输出：\n", r + 1, r));
-//            Utils.print(M, "", 16);
         }
     }
 
@@ -47,7 +47,6 @@ public class DC140713Algorithm3 extends AbstractAlgorithm {
                 c = o + (q + i) + H;
                 b = o + ((h + p - i) & h);
                 d = o + ((h + q - i) & h) + H;
-//                System.out.println(String.format("%2d->%2d, %2d->%2d: %3d", a, b, c - H, d - H, k));
                 C[d] = (byte) ($[($[C[d] & 0xFF] ^ C[c] ^ K[k + d - o]) & 0xFF] ^ C[b]);
                 C[b] = (byte) ($[($[C[b] & 0xFF] ^ C[a] ^ K[k + b - o]) & 0xFF] ^ C[c]);
                 C[c] = (byte) ($[($[C[c] & 0xFF] ^ C[d] ^ K[k + c - o]) & 0xFF] ^ C[a]);
@@ -55,7 +54,6 @@ public class DC140713Algorithm3 extends AbstractAlgorithm {
             }
             q = (1 << r) & h;
             p = HH >> r;
-            // System.out.println("------------------------");
         }
     }
 

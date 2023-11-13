@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lib" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/sts.jar!/" />
+    </JAVADOC>
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/lib" />
+    </NATIVE>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/jiconfont-swing-1.0.1-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jiconfont-font_awesome-4.7.0.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/sts.jar!/" />
+      <root url="file://$PROJECT_DIR$/../../Java/sts/src" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/lib" recursive="false" />
+  </library>
+</component>

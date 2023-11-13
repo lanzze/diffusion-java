@@ -1,7 +1,14 @@
 package com.aslan.module.utils;
 
 import com.aslan.module.cipher.AlgorithmInfo;
+import sts.analyze.Analyze;
+import sts.analyze.Item;
+import sts.analyze.Result;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Utils {
@@ -85,5 +92,24 @@ public class Utils {
     public static String hex(byte value) {
         String hex = Integer.toHexString(value & 0xFF);
         return (value & 0xFF) < 16 ? "0" + hex : hex;
+    }
+
+    public static boolean print(Result[] results) {
+        for (Result result : results) {
+            if (result != null) {
+                Item[] items = result.items;
+                System.out.println("\n" + result.name);
+                if (items != null) {
+                    for (Item item : items) {
+                        System.out.println(String.format("%s %6f %s", new Object[]{item.name, Double.valueOf(item.value), item.success ? "SUCCESS" : "FAIL"}));
+                    }
+                } else {
+                    System.out.println(String.format("%6f %s", new Object[]{Double.valueOf(result.value), result.success ? "SUCCESS" : "FAIL"}));
+                }
+            } else {
+                System.out.println("---------------------------------------------------null");
+            }
+        }
+        return true;
     }
 }

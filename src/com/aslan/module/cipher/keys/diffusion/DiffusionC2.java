@@ -6,7 +6,7 @@ import com.aslan.module.cipher.algorithms.Box;
 import com.aslan.module.cipher.keys.AbstractKey;
 import com.aslan.module.utils.Utils;
 
-public abstract class DiffusionGS1 extends AbstractKey {
+public abstract class DiffusionC2 extends AbstractKey {
     protected byte[] S = Box.V2.ENC_BOX;
     protected int N = 0;
     protected int P = 0;
@@ -33,7 +33,6 @@ public abstract class DiffusionGS1 extends AbstractKey {
         P = 1 << G;
         HH = (int) Math.ceil(N * 1.0 / 4);
         R = G;
-
     }
 
 
@@ -41,7 +40,8 @@ public abstract class DiffusionGS1 extends AbstractKey {
         int len = Math.min(N, cipherInfo.keyData.length);
         System.arraycopy(cipherInfo.keyData, 0, K, 0, len);
         for (int i = len, j = 1; i < N; i++) {
-            K[i] = (byte) j++;
+//            K[i] = (byte) j++;
+            K[i] = 0;
         }
     }
 
@@ -58,20 +58,14 @@ public abstract class DiffusionGS1 extends AbstractKey {
                 c = (q + i) % H + H;
                 b = ((h + p - i) % H);
                 d = ((h + q - i) % H) + H;
-                K[a] = S[(K[d] ^ K[a] ^ K[b]) & 0xFF];
-                K[c] = S[(K[a] ^ K[c] ^ K[d]) & 0xFF];
-                K[b] = S[(K[c] ^ K[b] ^ K[a]) & 0xFF];
-                K[d] = S[(K[b] ^ K[d] ^ K[c]) & 0xFF];
+                K[a] = S[(K[a] ^ K[d] ^ K[b]) & 0xFF];
+                K[c] = S[(K[c] ^ K[a] ^ K[d]) & 0xFF];
+                K[b] = S[(K[b] ^ K[c] ^ K[a]) & 0xFF];
+                K[d] = S[(K[d] ^ K[b] ^ K[c]) & 0xFF];
             }
             p = 1 << r;
             q = PP >> r;
-//            System.out.print(String.format("第%d轮，r=%d，输出：\n", r + 1, r));
-//            Utils.print(K, "", 16);
         }
         return K;
-    }
-
-    public void run() {
-        diffusion(K);
     }
 }
